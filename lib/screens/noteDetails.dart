@@ -16,16 +16,17 @@ class _NoteDetailsState extends State<NoteDetails> {
 
   @override
   Widget build(BuildContext context) {
-    Note? note = ModalRoute.of(context)?.settings.arguments as Note?;
+    Note? existNote = ModalRoute.of(context)?.settings.arguments as Note?;
 
-    _titleController.text = note?.title ?? '';
-    _contentController.text = note?.content ?? '';
+    _titleController.text = existNote?.title ?? '';
+    _contentController.text = existNote?.content ?? '';
 
     return Scaffold(
-      appBar: NoteAppBar(note: note),
+      appBar: NoteAppBar(existNote: existNote),
       bottomNavigationBar: BottomBar(
         titleController: _titleController,
         contentController: _contentController,
+        existNote: existNote,
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -68,10 +69,10 @@ class _NoteDetailsState extends State<NoteDetails> {
 class NoteAppBar extends StatelessWidget implements PreferredSizeWidget {
   const NoteAppBar({
     super.key,
-    required this.note,
+    required this.existNote,
   });
 
-  final Note? note;
+  final Note? existNote;
 
   @override
   Widget build(BuildContext context) {
@@ -80,13 +81,13 @@ class NoteAppBar extends StatelessWidget implements PreferredSizeWidget {
       iconTheme: const IconThemeData(
         color: Color.fromRGBO(40, 40, 40, 1),
       ),
-      actions: note != null
+      actions: existNote != null
           ? [
               IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () {
                   Provider.of<NotesProvider>(context, listen: false)
-                      .deleteNote(note!);
+                      .deleteNote(existNote!);
                   Navigator.pop(context);
                 },
               ),
@@ -102,11 +103,13 @@ class NoteAppBar extends StatelessWidget implements PreferredSizeWidget {
 class BottomBar extends StatelessWidget {
   final TextEditingController titleController;
   final TextEditingController contentController;
+  final Note? existNote;
 
   const BottomBar({
     Key? key,
     required this.titleController,
     required this.contentController,
+    this.existNote,
   }) : super(key: key);
 
   @override
@@ -129,7 +132,9 @@ class BottomBar extends StatelessWidget {
                   title: title,
                   content: content,
                 );
-                notesProvider.addNote(newNote);
+                existNote != null
+                    ? notesProvider.updateNote(existNote!, newNote)
+                    : notesProvider.addNote(newNote);
                 Navigator.pop(context);
               },
             ),

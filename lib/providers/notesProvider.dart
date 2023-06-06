@@ -22,14 +22,21 @@ class NotesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateNote(Note existNote, Note newNote) async {
+    notes.remove(existNote);
+    notes.add(newNote);
+    saveToLocalStorage();
+    notifyListeners();
+  }
+
   Future<void> deleteNote(Note note) async {
-    await localStorage.ready;
     notes.remove(note);
     saveToLocalStorage();
     notifyListeners();
   }
 
-  void saveToLocalStorage() {
+  void saveToLocalStorage() async {
+    await localStorage.ready;
     localStorage.setItem('notes', notes.map((n) => n.toMap()).toList());
   }
 }
