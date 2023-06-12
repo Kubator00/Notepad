@@ -4,7 +4,7 @@ import 'package:notepad/providers/notesProvider.dart';
 import 'package:provider/provider.dart';
 
 class NoteDetails extends StatefulWidget {
-  const NoteDetails({super.key});
+  const NoteDetails({Key? key}) : super(key: key);
 
   @override
   State<NoteDetails> createState() => _NoteDetailsState();
@@ -15,6 +15,44 @@ class _NoteDetailsState extends State<NoteDetails> {
   final TextEditingController _contentController = TextEditingController();
 
   @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  void saveNoteHandler() {
+    String title = _titleController.text;
+    String content = _contentController.text;
+    Note newNote = Note(
+      title: title,
+      content: content,
+    );
+
+    final notesProvider = Provider.of<NotesProvider>(context, listen: false);
+    final existNote = ModalRoute.of(context)?.settings.arguments as Note?;
+
+    if (existNote != null) {
+      notesProvider.updateNote(existNote, newNote);
+    } else {
+      notesProvider.addNote(newNote);
+    }
+
+    Navigator.pop(context);
+  }
+
+  void deleteNoteHandler() {
+    final notesProvider = Provider.of<NotesProvider>(context, listen: false);
+    final existNote = ModalRoute.of(context)?.settings.arguments as Note?;
+
+    if (existNote != null) {
+      notesProvider.deleteNote(existNote);
+    }
+
+    Navigator.pop(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     Note? existNote = ModalRoute.of(context)?.settings.arguments as Note?;
 
@@ -22,12 +60,9 @@ class _NoteDetailsState extends State<NoteDetails> {
     _contentController.text = existNote?.content ?? '';
 
     return Scaffold(
-      appBar: NoteAppBar(existNote: existNote),
-      bottomNavigationBar: BottomBar(
-        titleController: _titleController,
-        contentController: _contentController,
-        existNote: existNote,
-      ),
+      appBar: NoteAppBar(
+          deleteNoteHandler: existNote != null ? deleteNoteHandler : null),
+      bottomNavigationBar: BottomBar(saveNoteHandler: saveNoteHandler),
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
@@ -57,22 +92,15 @@ class _NoteDetailsState extends State<NoteDetails> {
       ),
     );
   }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _contentController.dispose();
-    super.dispose();
-  }
 }
 
 class NoteAppBar extends StatelessWidget implements PreferredSizeWidget {
   const NoteAppBar({
-    super.key,
-    required this.existNote,
-  });
+    Key? key,
+    required this.deleteNoteHandler,
+  }) : super(key: key);
 
-  final Note? existNote;
+  final VoidCallback? deleteNoteHandler;
 
   @override
   Widget build(BuildContext context) {
@@ -81,15 +109,11 @@ class NoteAppBar extends StatelessWidget implements PreferredSizeWidget {
       iconTheme: const IconThemeData(
         color: Color.fromRGBO(40, 40, 40, 1),
       ),
-      actions: existNote != null
+      actions: deleteNoteHandler != null
           ? [
               IconButton(
                 icon: const Icon(Icons.delete),
-                onPressed: () {
-                  Provider.of<NotesProvider>(context, listen: false)
-                      .deleteNote(existNote!);
-                  Navigator.pop(context);
-                },
+                onPressed: deleteNoteHandler,
               ),
             ]
           : [],
@@ -101,20 +125,12 @@ class NoteAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class BottomBar extends StatelessWidget {
-  final TextEditingController titleController;
-  final TextEditingController contentController;
-  final Note? existNote;
+  final VoidCallback saveNoteHandler;
 
-  const BottomBar({
-    Key? key,
-    required this.titleController,
-    required this.contentController,
-    this.existNote,
-  }) : super(key: key);
+  const BottomBar({Key? key, required this.saveNoteHandler}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final notesProvider = Provider.of<NotesProvider>(context, listen: false);
     return BottomAppBar(
       height: 50,
       color: const Color.fromRGBO(215, 215, 215, 1),
@@ -125,20 +141,9 @@ class BottomBar extends StatelessWidget {
             data: const IconThemeData(size: 35),
             child: IconButton(
               icon: const Icon(Icons.save_outlined),
-              onPressed: () {
-                String title = titleController.text;
-                String content = contentController.text;
-                Note newNote = Note(
-                  title: title,
-                  content: content,
-                );
-                existNote != null
-                    ? notesProvider.updateNote(existNote!, newNote)
-                    : notesProvider.addNote(newNote);
-                Navigator.pop(context);
-              },
+              onPressed: saveNoteHandler,
             ),
-          ),
+          )
         ],
       ),
     );

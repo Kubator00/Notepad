@@ -199,10 +199,11 @@ class _NoteCardState extends State<NoteCard> {
                 Text(
                   widget.note.title ?? '',
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Color.fromARGB(255, 239, 239, 239),
-                  ),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Color.fromARGB(255, 239, 239, 239),
+                      overflow: TextOverflow.ellipsis),
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 8),
                 Text(widget.note.content ?? '',
