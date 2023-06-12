@@ -23,7 +23,6 @@ class Notepad extends StatelessWidget {
         },
         builder: (BuildContext context, Widget? child) {
           return Container(
-            constraints: const BoxConstraints(minWidth: 400),
             child: child,
           );
         },
