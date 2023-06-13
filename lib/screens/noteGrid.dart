@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:notepad/models/note.dart';
 
 List<Color> cardColors = [
-  Colors.amber,
   Colors.pink,
   Colors.blue,
   Colors.deepOrange,
